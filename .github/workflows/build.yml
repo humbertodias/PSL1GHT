@@ -15,6 +15,11 @@ jobs:
       run: |
         echo "sha_name=$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_ENV
 
+    - name: Set up dependencies
+      id: deps
+      run: |
+        apt update -y && apt install -y libelf-dev
+
       # using pre-compiled sdk
     - name: Download PSL1GHT Toolchain
       run: |
