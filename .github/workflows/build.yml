@@ -1,0 +1,52 @@
+name: Build samples
+
+on: [ push, pull_request, workflow_dispatch ]
+
+jobs:
+  build_pkg:
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set env vars
+      id: slug
+      run: |
+        echo "sha_name=$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_ENV
+
+      # using pre-compiled sdk
+    - name: Download PSL1GHT Toolchain
+      run: |
+
+        OWNER=humbertodias
+        REPO=ps3toolchain
+        curl -s https://api.github.com/repos/$OWNER/$REPO/releases/latest \
+        | grep "browser_download_url" \
+        | cut -d '"' -f 4 \
+        | wget -q -i - -O - | tar -xzvf -
+
+        echo "PS3DEV=${GITHUB_WORKSPACE}/ps3dev" >> $GITHUB_ENV
+        echo "PSL1GHT=${GITHUB_WORKSPACE}/ps3dev" >> $GITHUB_ENV
+
+    - name: Build samples
+      run: |
+        make
+        cd samples
+        make pkg
+
+    - name: Push package artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: samples-pkg_${{ env.sha_name }}
+        path: ./**/*.pkg
+        if-no-files-found: error
+        # don't keep artifacts for too long
+        retention-days: 7
+
+    - name: Create Release
+      id: create_release
+      uses: softprops/action-gh-release@v2
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: ./**/*.pkg
