@@ -49,3 +49,4 @@ tools/ps3load/ps3load
 tools/raw2h/raw2h
 tools/sprxlinker/sprxlinker
 tools/fself/fself
+.DS_Store

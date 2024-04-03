@@ -10,35 +10,10 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Set env vars
-      id: slug
-      run: |
-        echo "sha_name=$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_ENV
-
-    - name: Set up dependencies
-      id: deps
-      run: |
-        sudo apt update -y && sudo apt install -y libelf-dev curl wget tar make gcc libgmp-dev
-
-      # using pre-compiled sdk
-    - name: Download PSL1GHT Toolchain
-      run: |
-
-        OWNER=humbertodias
-        REPO=ps3toolchain
-        curl -s https://api.github.com/repos/$OWNER/$REPO/releases/latest \
-        | grep "browser_download_url" \
-        | cut -d '"' -f 4 \
-        | wget -q -i - -O - | tar -xzvf -
-
-        echo "PS3DEV=${GITHUB_WORKSPACE}/ps3dev" >> $GITHUB_ENV
-        echo "PSL1GHT=${GITHUB_WORKSPACE}/ps3dev" >> $GITHUB_ENV
-
     - name: Build samples
       run: |
-        make
-        cd samples
-        make pkg
+        docker build . -t psl1ght
+        docker run --rm -v $(pwd):/psl1ght -w /psl1ght psl1ght bash -c "make pkg"
 
     - name: Push package artifact
       uses: actions/upload-artifact@v4

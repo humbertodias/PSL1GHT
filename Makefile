@@ -8,7 +8,7 @@ ifeq ($(strip $(PSL1GHT)),)
 $(error "Please set PSL1GHT in your environment. export PSL1GHT=<path>")
 endif
 
-.PHONY: samples
+.PHONY: samples pkg
 
 all:
 	@$(MAKE) -C ppu --no-print-directory
@@ -44,5 +44,11 @@ clean:
 	@$(MAKE) -C common clean --no-print-directory
 	@$(MAKE) -C tools clean --no-print-directory
 	@rm -rf doc
+
+pkg:
+	@$(MAKE)
+	@$(MAKE) install-ctrl
+	@$(MAKE) samples
+	@$(MAKE) -C samples pkg
 
 .PHONY: all clean install
